@@ -30,7 +30,7 @@ jobs:
   auto-merge:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request' && github.event.action == 'synchronize'
+    if: contains(github.event.pull_request.labels.*.name, 'auto-merge')
     
     steps:
       - name: Checkout code
@@ -41,6 +41,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  notify:
+    runs-on: ubuntu-latest
+    needs: auto-merge
+    if: contains(github.event.pull_request.labels.*.name, 'notify')
+    
+    steps:
       - name: Notify on GitHub Issue
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
