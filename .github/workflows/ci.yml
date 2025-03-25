@@ -7,6 +7,10 @@ on:
   pull_request:
     branches:
       - main # Change to your default branch if different
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
   build:
@@ -29,7 +33,7 @@ jobs:
   auto-merge:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request' && github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.pull_request.mergeable == true
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -38,12 +42,18 @@ jobs:
       uses: pascalgn/automerge-action@v0.16.4
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        MERGE_LABELS: "automerge,!wip"
+        MERGE_METHOD: "squash"
+        MERGE_COMMIT_MESSAGE: "pull request #{pullRequest.number} from {pullRequest.head.ref}"
 
   notify:
     runs-on: ubuntu-latest
     needs: [build, auto-merge]
     if: always()
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
     - name: Slack Notification
       uses: slackapi/slack-github-action@v1.24.0
       with:
@@ -94,5 +104,5 @@ jobs:
           - Event: ${{ github.event_name }}
           
           Check the full logs here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        to: srujan.patil07.com
+        to: srujan.patil07@gmail.com
         from: GitHub Actions
