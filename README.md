@@ -1,3 +1,4 @@
+# Testing Auto Merge
 ## Testing the CI Workflow
 
 This section describes how to test the CI workflow.
